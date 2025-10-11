@@ -1,0 +1,56 @@
+[data-hover='card-image-zoom'] {
+  figure {
+    overflow: clip;
+    img {
+      transform: scale(1);
+      transition: transform 0.5s ease-in-out;
+    }
+  }
+}
+
+[data-hover='card-image-zoom']:hover {
+  figure {
+    img {
+      transform: scale(1.03);
+    }
+  }
+}
+
+[data-hover='underline'] {
+  position: relative;
+  &:after {
+    position: absolute;
+    height: 0.067em;
+    background-color: var(--text-color--text-primary);
+    width: 100%;
+    bottom: 0em;
+    left: 50%;
+    transform: translateX(-50%);
+    transform-origin: center;
+    animation-duration: 0.5s;
+    animation-timing-function: ease-in-out;
+  }
+
+  &:hover,
+  &:focus {
+    &:after {
+      animation-name: hover-animation;
+    }
+  }
+}
+
+@keyframes hover-animation {
+  from {
+    width: 0;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+.button .button_arrow {
+  transition: 0.2s transform ease-out;
+}
+.button:hover .button_arrow {
+  transform: translateX(30%);
+}

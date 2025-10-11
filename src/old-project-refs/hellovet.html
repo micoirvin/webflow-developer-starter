@@ -1,0 +1,717 @@
+<script>
+  // Initialize when DOM content is loaded
+  document.addEventListener('DOMContentLoaded', () => {
+    let html = document.documentElement;
+    html.classList.add('ready');
+  });
+  // Global Animations
+  function handleGlobalAnimation() {
+    (() => {
+      let navbar = document.querySelector('.navbar');
+      if (!navbar) return;
+      gsap.to(navbar, {
+        duration: 1,
+        y: '-100%',
+        scrollTrigger: {
+          trigger: 'footer',
+          start: 'top 300',
+          end: '100 100',
+          scrub: 1.25,
+        },
+      });
+    })();
+
+    // Animate Stagger Elements
+    let staggerElements = document.querySelectorAll('[anim-stagger]');
+    if (staggerElements.length > 0) {
+      staggerElements.forEach((element) => {
+        animateStagger(element);
+      });
+    }
+
+    function animateStagger(element, children, opacityValue) {
+      if (children == null) {
+        children = element.getAttribute('anim-stagger');
+      }
+      let childrens = element.querySelectorAll(children);
+      gsap.set(childrens, {
+        y: element.getAttribute('from-y') || '1rem',
+        opacity: opacityValue || 0,
+      });
+      ScrollTrigger.batch(childrens, {
+        onEnter: (target) => {
+          gsap.to(target, {
+            autoAlpha: 1,
+            duration: element.getAttribute('data-duration') || 1,
+            y: '0rem',
+            opacity: 1,
+            stagger: {
+              from: element.getAttribute('stagger-from') || 'start',
+              each: element.getAttribute('stagger-amount') || 0.25,
+            },
+            ease: element.getAttribute('data-easing') || 'power3.out',
+            scrollTrigger: {
+              trigger: element,
+              start: element.getAttribute('scrollTrigger-start') || 'top 95%',
+              markers: element.getAttribute('anim-markers') || false,
+            },
+            delay: element.getAttribute('anim-delay') || 0.25,
+          });
+        },
+      });
+    }
+
+    function animateElement(element) {
+      let delay = element.getAttribute('anim-delay') || 0.25;
+      let duration = element.getAttribute('data-duration') || 1;
+      let y = element.getAttribute('from-y') || '1rem';
+      let easing = element.getAttribute('data-easing') || 'power3.out';
+
+      gsap.fromTo(
+        element,
+        { y: y, opacity: 0, x: element.getAttribute('from-x') || 0 },
+        {
+          duration: duration,
+          y: '0%',
+          x: '0%',
+          opacity: 1,
+          ease: easing,
+          scrollTrigger: element,
+          delay: delay,
+          clearProps: true,
+        }
+      );
+    }
+
+    document.querySelectorAll('[anim-element], .anim-element').forEach((ele) => {
+      animateElement(ele);
+    });
+  }
+
+  handleGlobalAnimation();
+</script>
+<script>
+  const accordion = () => {
+    const accordions = document.querySelectorAll('[accordion-element="root"]');
+
+    accordions.forEach((accordion) => {
+      const mq = accordion.getAttribute('accordion-mq') || null;
+      const mqs = {
+        'mob-portrait': '(max-width: 767px)',
+      };
+      if (mq) {
+        const mediaQuery = window.matchMedia(mqs[mq]);
+        if (!mediaQuery.matches) {
+          return;
+        }
+      }
+
+      const accordionItems = accordion.querySelectorAll('[accordion-element="box"]');
+
+      accordionItems.forEach((item, index) => {
+        const header = item.querySelector('[accordion-element="header"]');
+        const contentWrapper = item.querySelector('[accordion-element="content-wrap"]');
+        contentWrapper.style.maxHeight = '0px';
+
+        /*
+         ** Set accessibility
+         */
+        let accordionId = `accordion-${index}`;
+        let accordionTargetId = `accordion-target-${index}`;
+
+        // Trigger
+        header.id = accordionId;
+        header.setAttribute('aria-controls', accordionTargetId);
+
+        // Target
+        contentWrapper.id = accordionTargetId;
+        contentWrapper.setAttribute('labelledby', accordionId);
+
+        header.addEventListener('click', (e) => {
+          e.preventDefault();
+          const contentWrapperHeight = contentWrapper.querySelector(
+            '[accordion-element="content"]'
+          ).offsetHeight;
+          toggleAccordion(item, header, contentWrapper, contentWrapperHeight);
+        });
+      });
+
+      function toggleAccordion(item, header, contentWrapper, height) {
+        // Close all other accordion items first
+        accordions.forEach((otherItem) => {
+          if (otherItem !== item) {
+            otherItem.setAttribute('aria-expanded', 'false');
+            otherItem.setAttribute('accordion-state', '');
+            const otherContent = item.querySelector('[accordion-element="content-wrapper"]');
+            if (otherContent) {
+              otherContent.style.maxHeight = '0px';
+            }
+          }
+        });
+
+        // Toggle the clicked item
+        let ariaExpanded = header.getAttribute('aria-expanded');
+        ariaExpanded = ariaExpanded === 'true' ? 'false' : 'true';
+        header.setAttribute('aria-expanded', ariaExpanded);
+        item.setAttribute(
+          'accordion-state',
+          item.getAttribute('accordion-state') === 'expanded' ? '' : 'expanded'
+        );
+        if (contentWrapper) {
+          contentWrapper.style.maxHeight =
+            contentWrapper.style.maxHeight === '0px' ? `${height + 9 * 14}px` : '0px';
+        }
+      }
+    });
+  };
+
+  const locationSwitch = () => {
+    const filter = document.querySelector('.prices_filter-form');
+    if (!filter) return;
+    const header = filter.querySelector('.filter-form_header > div');
+
+    let currentSelection = header.textContent;
+
+    const radios = filter.querySelectorAll('input[type="radio"]');
+    radios.forEach((radio) => {
+      radio.addEventListener('change', (event) => {
+        if (!event.target.checked) return;
+
+        currentSelection = event.target.parentElement.textContent;
+        header.textContent = currentSelection;
+        console.log(`Selected: ${currentSelection}`);
+
+        const accordionHeader = document.querySelector('[accordion-element="header"]');
+        if (accordionHeader) {
+          accordionHeader.click();
+        }
+
+        const locationTab = document.querySelector('.prices_tabs[data-has-location=true]');
+        locationTab.classList.remove('is-inactive');
+        locationTab.classList.add('is-active');
+
+        const noLocationTab = document.querySelector('.prices_tabs[data-has-location=false]');
+        noLocationTab.classList.remove('is-active');
+        noLocationTab.classList.add('is-inactive');
+      });
+    });
+
+    // Add click event listener to filter
+    filter.addEventListener('click', () => {
+      if (filter.getAttribute('accordion-state') === 'expanded') {
+        filter.classList.add('is-active');
+      } else {
+        filter.classList.remove('is-active');
+      }
+    });
+  };
+
+  const petSwitch = () => {
+    const switchItems = document.querySelectorAll('.prices_tab-switch-item');
+
+    switchItems.forEach((item) => {
+      item.addEventListener('click', () => {
+        const pet = item.getAttribute('data-pricing-switch-pet');
+        if (!pet) return;
+
+        // Update switch item classes
+        switchItems.forEach((switchItem) => {
+          if (switchItem === item) {
+            switchItem.classList.add('is-active');
+            switchItem.classList.remove('is-inactive');
+          } else {
+            switchItem.classList.remove('is-active');
+            switchItem.classList.add('is-inactive');
+          }
+        });
+
+        // Select all pet tabs
+        const allPetTabs = document.querySelectorAll('.prices_list-wrap[data-pricing-pet]');
+        allPetTabs.forEach((tab) => {
+          if (tab.getAttribute('data-pricing-pet') === pet) {
+            tab.classList.add('is-active');
+            tab.classList.remove('is-inactive');
+          } else {
+            tab.classList.remove('is-active');
+            tab.classList.add('is-inactive');
+          }
+        });
+      });
+    });
+  };
+
+  const modals = () => {
+    const modalButtons = document.querySelectorAll('[button-function="modal-open"]');
+    modalButtons.forEach((button) => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        const type = button.getAttribute('modal-type');
+        const name = button.getAttribute('modal-name');
+        const modal = document.querySelector(`[modal][modal-type=${type}][modal-name=${name}]`);
+        modal?.setAttribute('is-open', '');
+      });
+    });
+
+    const modalCloseButtons = document.querySelectorAll('[modal-close]');
+    modalCloseButtons.forEach((button) => {
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+
+        button.closest('[modal]')?.removeAttribute('is-open');
+      });
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    accordion();
+    locationSwitch();
+    petSwitch();
+    modals();
+  });
+
+  // Slider
+  // Slider
+  handleSwiper();
+
+  function handleSwiper() {
+    if (!document.querySelector('.swiper .swiper-slide')) return;
+
+    loadScript('https://cdnjs.cloudflare.com/ajax/libs/Swiper/11.0.5/swiper-bundle.min.js')
+      .then(() => {
+        if (document.querySelector('[swiper-slider]')) {
+          document.querySelectorAll('[swiper-slider]').forEach((slider) => {
+            let swiperContainer = slider.querySelector('.swiper');
+            let nextBtn = slider.querySelector('[swiper-next-btn]');
+            let prevBtn = slider.querySelector('[swiper-prev-btn]');
+            let progressBar = slider.querySelector('[swiper-progress]');
+            let scrollbarEl = slider.querySelector('[swiper-scrollbar-drag]');
+
+            let toInt = (v, fallback) => {
+              let n = parseInt(v, 10);
+              return Number.isFinite(n) ? n : fallback;
+            };
+
+            let spaceDesktop = toInt(slider.getAttribute('data-space'), 12);
+            let spaceMobile = toInt(slider.getAttribute('data-space-mobile'), 10);
+
+            let centerMode = slider.hasAttribute('data-center');
+            let centerBounds = slider.hasAttribute('data-center-bounds');
+            let clickToCenter = slider.hasAttribute('data-click-center');
+
+            function updateButtonStates(swiper) {
+              if (prevBtn) {
+                prevBtn.style.pointerEvents = swiper.isBeginning ? 'none' : 'auto';
+                prevBtn.style.opacity = swiper.isBeginning ? '0.5' : '1';
+                prevBtn.setAttribute('aria-disabled', String(swiper.isBeginning));
+              }
+              if (nextBtn) {
+                nextBtn.style.pointerEvents = swiper.isEnd ? 'none' : 'auto';
+                nextBtn.style.opacity = swiper.isEnd ? '0.5' : '1';
+                nextBtn.setAttribute('aria-disabled', String(swiper.isEnd));
+              }
+            }
+
+            function updateProgress(swiper) {
+              if (!progressBar) return;
+              let progress = (swiper.progress || 0) * 100;
+              progressBar.style.width = progress + '%';
+            }
+
+            let swiperInstance = new Swiper(swiperContainer, {
+              slidesPerView: 'auto',
+              spaceBetween: spaceDesktop,
+              grabCursor: true,
+              speed: 700,
+              centeredSlides: centerMode,
+              centeredSlidesBounds: centerBounds,
+              slideToClickedSlide: centerMode || clickToCenter,
+              watchOverflow: true,
+              navigation: {
+                nextEl: nextBtn,
+                prevEl: prevBtn,
+              },
+              scrollbar: scrollbarEl
+                ? {
+                    el: scrollbarEl,
+                    draggable: true,
+                    snapOnRelease: false,
+                  }
+                : false,
+              breakpoints: {
+                0: { spaceBetween: spaceMobile },
+                768: { spaceBetween: spaceDesktop },
+              },
+              on: {
+                init() {
+                  updateButtonStates(this);
+                  updateProgress(this);
+                },
+                slideChange() {
+                  updateButtonStates(this);
+                  updateProgress(this);
+                },
+                progress() {
+                  updateProgress(this);
+                },
+                reachBeginning() {
+                  updateButtonStates(this);
+                },
+                reachEnd() {
+                  updateButtonStates(this);
+                },
+              },
+            });
+          });
+        }
+      })
+      .catch((err) => console.error('Error loading Swiper:', err));
+  }
+
+  // --- helper to load scripts dynamically ---
+  function loadScript(src) {
+    return new Promise((resolve, reject) => {
+      if (document.querySelector(`script[src="${src}"]`)) {
+        resolve();
+        return;
+      }
+      let s = document.createElement('script');
+      s.src = src;
+      s.async = true;
+      s.onload = resolve;
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  // Accordions
+  initAccordionCSS();
+  function initAccordionCSS() {
+    document.querySelectorAll('[data-accordion-list="css"]').forEach((accordion) => {
+      // Read configuration flags
+      const closeSiblings = accordion.getAttribute('data-accordion-close-siblings') === 'true';
+      const collapsible = accordion.getAttribute('data-accordion-collapsible') === 'true';
+      const eventType = accordion.getAttribute('data-accordion-event') || 'click';
+      const allNotActiveMobile =
+        accordion.getAttribute('data-all-accordion-not-active-mobile') === 'true';
+
+      // Initialize active panels from data-accordion-active
+      const activeAttr = accordion.getAttribute('data-accordion-active');
+      const activeIndexes = activeAttr
+        ? activeAttr.split(',').map((n) => parseInt(n.trim(), 10) - 1)
+        : [];
+
+      // Function to update initial state
+      function updateInitialState() {
+        const isMobile = window.innerWidth <= 768; // Adjust breakpoint as needed
+        accordion.querySelectorAll('[data-accordion]').forEach((item, index) => {
+          if (isMobile && allNotActiveMobile) {
+            item.setAttribute('data-accordion', 'not-active');
+          } else if (activeIndexes.includes(index)) {
+            item.setAttribute('data-accordion', 'active');
+          } else {
+            item.setAttribute('data-accordion', 'not-active');
+          }
+        });
+      }
+
+      updateInitialState(); // Run on load
+
+      // Optional: Update state on resize
+      window.addEventListener('resize', updateInitialState);
+
+      // Shared logic to open/close an item
+      function toggleItem(item, open) {
+        // Prevent closing the last panel when collapsible="false"
+        if (!open && !collapsible) {
+          const activeCount = accordion.querySelectorAll('[data-accordion="active"]').length;
+          if (activeCount <= 1) return;
+        }
+        item.setAttribute('data-accordion', open ? 'active' : 'not-active');
+
+        // If configured, close all other panels when one opens
+        if (closeSiblings && open) {
+          accordion.querySelectorAll('[data-accordion="active"]').forEach((sib) => {
+            if (sib !== item) sib.setAttribute('data-accordion', 'not-active');
+          });
+        }
+      }
+
+      // Hover interaction mode
+      if (eventType === 'hover') {
+        accordion.querySelectorAll('[data-accordion-toggle]').forEach((toggle) => {
+          const item = toggle.closest('[data-accordion]');
+          if (!item) return;
+          toggle.addEventListener('mouseenter', () => toggleItem(item, true));
+        });
+      }
+      // Click interaction mode (default)
+      else {
+        accordion.addEventListener('click', (e) => {
+          const toggle = e.target.closest('[data-accordion-toggle]');
+          if (!toggle) return;
+          const item = toggle.closest('[data-accordion]');
+          if (!item) return;
+          const isActive = item.getAttribute('data-accordion') === 'active';
+          toggleItem(item, !isActive);
+        });
+      }
+    });
+  }
+
+  // 🗺️ Initialize Google Map
+  // 🗺️ Initialize Google Map
+  function initMap() {
+    const mapEl = document.getElementById('map');
+    if (!mapEl) return;
+
+    // 🌍 Create map
+    const map = new google.maps.Map(mapEl, {
+      zoom: 11,
+      center: { lat: 39.7684, lng: -86.1581 },
+      styles: [
+        {
+          featureType: 'landscape.man_made',
+          elementType: 'geometry',
+          stylers: [{ color: '#f7f1df' }],
+        },
+        {
+          featureType: 'landscape.natural',
+          elementType: 'geometry',
+          stylers: [{ color: '#d0e3b4' }],
+        },
+        {
+          featureType: 'landscape.natural.terrain',
+          elementType: 'geometry',
+          stylers: [{ visibility: 'off' }],
+        },
+        { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+        { featureType: 'poi.business', elementType: 'all', stylers: [{ visibility: 'off' }] },
+        { featureType: 'poi.medical', elementType: 'geometry', stylers: [{ color: '#fbd3da' }] },
+        { featureType: 'poi.park', elementType: 'geometry', stylers: [{ color: '#bde6ab' }] },
+        { featureType: 'road', elementType: 'geometry.stroke', stylers: [{ visibility: 'off' }] },
+        { featureType: 'road', elementType: 'labels', stylers: [{ visibility: 'off' }] },
+        {
+          featureType: 'road.highway',
+          elementType: 'geometry.fill',
+          stylers: [{ color: '#ffe15f' }],
+        },
+        {
+          featureType: 'road.highway',
+          elementType: 'geometry.stroke',
+          stylers: [{ color: '#efd151' }],
+        },
+        {
+          featureType: 'road.arterial',
+          elementType: 'geometry.fill',
+          stylers: [{ color: '#ffffff' }],
+        },
+        { featureType: 'road.local', elementType: 'geometry.fill', stylers: [{ color: 'black' }] },
+        {
+          featureType: 'transit.station.airport',
+          elementType: 'geometry.fill',
+          stylers: [{ color: '#cfb2db' }],
+        },
+        { featureType: 'water', elementType: 'geometry', stylers: [{ color: '#a2daf2' }] },
+      ],
+    });
+
+    // 🔄 Smooth pan and zoom with offset for info window
+    function smoothPanAndZoom(latlng, targetZoom) {
+      const projection = map.getProjection();
+      if (!projection) {
+        map.panTo(latlng);
+        map.setZoom(targetZoom);
+        return;
+      }
+
+      const overlay = new google.maps.OverlayView();
+      overlay.draw = () => {};
+      overlay.setMap(map);
+
+      const point = projection.fromLatLngToPoint(latlng);
+      const scale = Math.pow(2, targetZoom);
+
+      const popupHeight = 150; // adjust if your popup is taller
+      const worldCoordinateOffset = new google.maps.Point(point.x, point.y - popupHeight / scale);
+
+      const newCenter = projection.fromPointToLatLng(worldCoordinateOffset);
+
+      map.panTo(newCenter);
+
+      setTimeout(() => {
+        map.setZoom(targetZoom);
+      }, 300); // adjust delay if needed
+    }
+
+    // 📍 Get all custom marker elements
+    const markers = document.querySelectorAll('[map-marker]');
+    if (!markers.length) return;
+
+    // 🧩 Custom HTML Marker class
+    class HTMLMapMarker extends google.maps.OverlayView {
+      constructor(latlng, element, name) {
+        super();
+        this.latlng = latlng;
+        this.element = element;
+        this.name = name;
+      }
+      onAdd() {
+        const panes = this.getPanes();
+        if (!panes) return;
+        panes.overlayMouseTarget.appendChild(this.element);
+        Object.assign(this.element.style, {
+          position: 'absolute',
+          transform: 'translate(-50%, -100%)',
+          cursor: 'pointer',
+        });
+        this.clickHandler = () => {
+          setActiveMarker(this.name);
+          smoothPanAndZoom(this.latlng, 15); // smooth pan + zoom
+        };
+        this.element.addEventListener('click', this.clickHandler);
+      }
+      draw() {
+        const projection = this.getProjection();
+        if (!projection) return;
+        const point = projection.fromLatLngToDivPixel(this.latlng);
+        if (point) {
+          this.element.style.left = point.x + 'px';
+          this.element.style.top = point.y + 'px';
+        }
+      }
+      onRemove() {
+        if (this.element?.parentNode) {
+          this.element.parentNode.removeChild(this.element);
+          this.element.removeEventListener('click', this.clickHandler);
+        }
+      }
+    }
+
+    // 🎯 Set active marker
+    function setActiveMarker(name) {
+      document
+        .querySelectorAll('[map-marker], [location-item]')
+        .forEach((el) => el.classList.remove('active'));
+      const marker = document.querySelector(`[map-marker="${name}"]`);
+      const item = document.querySelector(`[location-item="${name}"]`);
+      if (marker) marker.classList.add('active');
+      if (item) item.classList.add('active');
+    }
+
+    // 🗺️ Add markers
+    const bounds = new google.maps.LatLngBounds();
+    const latlngs = [];
+
+    markers.forEach((el) => {
+      const name = el.getAttribute('map-marker');
+      const lat = parseFloat(el.dataset.lat);
+      const lng = parseFloat(el.dataset.long);
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const latlng = new google.maps.LatLng(lat, lng);
+      latlngs.push(latlng);
+      bounds.extend(latlng);
+      const marker = new HTMLMapMarker(latlng, el, name);
+      marker.setMap(map);
+    });
+
+    // 🧭 Adjust view (fix zoom issue for single location)
+    if (latlngs.length === 1) {
+      map.setCenter(latlngs[0]);
+      map.setZoom(12); // balanced zoom
+    } else {
+      map.fitBounds(bounds);
+    }
+  }
+
+  // 🚀 Initialize map on page load
+  window.addEventListener('load', () => {
+    if (typeof google !== 'undefined' && google.maps) initMap();
+  });
+
+  // ❌ Handle marker close buttons
+  document.querySelectorAll('[close-marker]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const markerEl = btn.closest('[map-marker]');
+      if (!markerEl) return;
+      const name = markerEl.getAttribute('map-marker');
+      const itemEl = document.querySelector(`[location-item="${name}"]`);
+      markerEl.classList.remove('active');
+      if (itemEl) itemEl.classList.remove('active');
+    });
+  });
+
+  // 🧭 Hovering location items triggers marker click
+  document.querySelectorAll('[location-item]').forEach((item) => {
+    const name = item.getAttribute('location-item');
+    const markerEl = document.querySelector(`[map-marker="${name}"]`);
+    if (!markerEl) return;
+    item.addEventListener('mouseenter', () => markerEl.click());
+  });
+
+  // 🔀 Custom toggle logic
+  const toggleElement = document.querySelector('[toggle]');
+  if (toggleElement) {
+    toggleElement.addEventListener('click', () => {
+      const current = toggleElement.getAttribute('toggle');
+      toggleElement.setAttribute('toggle', current === 'active' ? 'inactive' : 'active');
+    });
+  }
+</script>
+<script>
+  gsap.utils.toArray('.gallery-image').forEach((img) => {
+    gsap.to(img, {
+      rotationX: 0,
+      rotationY: 0,
+      rotationZ: 0,
+      scale: 1,
+      x: 0,
+      y: 0,
+      z: 0,
+      ease: 'power2.out',
+      scrollTrigger: {
+        trigger: '.gallery-images',
+        start: 'top 50%',
+        end: 'bottom 90%',
+        scrub: 1,
+      },
+    });
+  });
+</script>
+<script type="text/javascript" id="" charset="">
+  document.addEventListener(
+    'submit',
+    function (c) {
+      var a = c.target;
+      if (a.tagName.toLowerCase() === 'form') {
+        new FormData(a);
+        c = {};
+        for (var e = {}, b = 0; b < a.attributes.length; b++) {
+          var d = a.attributes[b];
+          c[d.name] = d.value;
+        }
+        a = a.elements;
+        for (b = 0; b < a.length; b++) {
+          d = a[b];
+          var f = d.getAttribute('data-ms-member') || d.name;
+          f && (e[f] = d.value);
+        }
+        c = { attributes: c, fields: e };
+        window.dataLayer = window.dataLayer || [];
+        window.dataLayer.push({ event: 'formSubmission', formDetails: c });
+      }
+    },
+    !0
+  );
+</script>
+<script type="text/javascript" id="" charset="">
+  window.addEventListener('message', function (a) {
+    a.origin !== 'https://form.typeform.com' ||
+      (a.data.type !== 'form-started' && a.data.type !== 'form-submit') ||
+      window.dataLayer.push({
+        event: 'typeform_' + a.data.type.replace('-', '_'),
+        typeform_form_id: a.data.formId,
+      });
+  });
+</script>

@@ -1,0 +1,158 @@
+<script>
+  const simpleAnimations = () => {
+    gsap.utils.toArray('[data-anim="fade-in"]').forEach((elem) => {
+      gsap.from(elem, {
+        opacity: 0,
+        y: 50,
+        duration: 1,
+        ease: 'power2.out',
+        scrollTrigger: {
+          trigger: elem,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+
+    gsap.from(gsap.utils.toArray('[data-anim="load-fade"]'), {
+      opacity: 0,
+      y: 30,
+      duration: 1,
+      ease: 'power2.out',
+      stagger: 0.2, // Each element starts 0.2s after the previous
+      delay: 0.2,
+    });
+
+    document.querySelectorAll('[data-anim="stagger-container"').forEach((container) => {
+      gsap.from(container.querySelectorAll('[data-anim="stagger-fade-in"]'), {
+        opacity: 0,
+        y: 30,
+        duration: 0.6,
+        ease: 'power2.out',
+        stagger: 0.2,
+        scrollTrigger: {
+          trigger: container,
+          start: 'top 80%',
+          toggleActions: 'play none none none',
+        },
+      });
+    });
+  };
+
+  const smartNavbar = () => {
+    const navbar = document.querySelector('.header');
+    const h1 = document.querySelector('h1');
+    const navbarRect = navbar.getBoundingClientRect();
+    const h1Rect = h1.getBoundingClientRect();
+    let initThreshold = h1Rect.top + window.scrollY - (navbarRect.bottom + window.scrollY) - 100;
+    initThreshold = Math.min(initThreshold, 0.5 * window.innerHeight);
+    let lastScrollY = window.scrollY;
+    let ticking = false;
+    function handleScroll() {
+      const currentScrollY = window.scrollY;
+
+      if (currentScrollY > initThreshold) {
+        navbar.classList.add('fill-color');
+        if (currentScrollY < lastScrollY) {
+          navbar.classList.remove('hidden');
+        } else {
+          navbar.classList.add('hidden');
+        }
+      } else {
+        navbar.classList.remove('hidden');
+        navbar.classList.remove('fill-color');
+      }
+
+      lastScrollY = currentScrollY;
+      ticking = false;
+    }
+
+    window.addEventListener('scroll', () => {
+      if (!ticking) {
+        window.requestAnimationFrame(handleScroll);
+        ticking = true;
+      }
+    });
+  };
+
+  const stickyCards = () => {
+    const cards = gsap.utils.toArray('.sticky-cards_card');
+    const spacer = 50;
+    const height = cards[0].getBoundingClientRect().height;
+    let offset = Math.max((window.innerHeight - height) / 2, 50);
+
+    const len = cards.length;
+    const lastCard = cards[len - 1];
+
+    cards.forEach((card, index) => {
+      if (index >= len - 1) return;
+      const height = card.getBoundingClientRect().height;
+      card.style.marginBottom = 0.8 * Math.min(window.innerHeight, height) + 'px';
+    });
+
+    cards.forEach((card, index) => {
+      const cardOffset = offset + index * spacer;
+      ScrollTrigger.create({
+        trigger: card,
+        start: `top-=${cardOffset} top`,
+        endTrigger: cards[len - 1],
+        end: `top+=${window.innerHeight - offset - (len - 1) * spacer} bottom`,
+        pin: true,
+        pinSpacing: false,
+        // markers: true,
+        invalidateOnRefresh: true,
+      });
+
+      gsap.to(card, {
+        scrollTrigger: {
+          trigger: card,
+          start: `top center`,
+          end: `bottom center`,
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+        ease: 'expo.out',
+      });
+    });
+  };
+
+  const anchorScroll = () => {
+    document.querySelector('html').style.scrollBehavior = 'auto';
+    document.querySelectorAll('a[href^="#"]').forEach((anchor) => {
+      anchor.addEventListener('click', function (e) {
+        const target = document.getElementById(this.getAttribute('href'));
+        if (!target) return;
+        e.preventDefault();
+
+        const start = this.getBoundingClientRect().bottom;
+        const end = target.getBoundingClientRect().top;
+        const offset = start - end;
+        const rate = 700;
+        const duration = Math.abs(offset / rate);
+
+        gsap.to(window, {
+          scrollTo: target,
+          duration: duration,
+          ease: 'power2.out',
+        });
+      });
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded', () => {
+    gsap.registerPlugin(ScrollTrigger);
+    simpleAnimations();
+    smartNavbar();
+    stickyCards();
+    anchorScroll();
+    document.querySelectorAll('a[submit]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        const form = el.closest('form');
+        if (form) {
+          form.requestSubmit ? form.requestSubmit() : form.submit();
+        }
+      });
+    });
+  });
+</script>

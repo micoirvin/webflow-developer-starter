@@ -1,0 +1,38 @@
+<!-- Uncomment for Production -->
+<!-- <script src="https://cdn.jsdelivr.net/npm/@micoirvin/webflow-developer-starter@1.0.1/dist/index.js"></script> -->
+<!-- Control Scripts, Remove for Production  -->
+<script>
+  var LOCAL_SCRIPT = 'http://localhost:3000/index.js';
+  var LIVE_SCRIPT =
+    'https://cdn.jsdelivr.net/npm/@micoirvin/webflow-developer-starter@1.0.1/dist/index.js';
+  function controlScripts(control) {
+    if (!control) return;
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const urlParams = new URLSearchParams(window.location.search);
+      const devMode = urlParams.get('devMode');
+      const pageLinks = document.querySelectorAll('a');
+
+      if (devMode === 'true') {
+        const devScript = document.createElement('script');
+        devScript.setAttribute('async', '');
+        devScript.setAttribute('crossorigin', '');
+        devScript.setAttribute('type', 'module');
+        devScript.setAttribute('src', LOCAL_SCRIPT);
+        document.body.append(devScript);
+
+        pageLinks.forEach((link) => {
+          const url = link.href;
+          const updatedUrl = url + '?devMode=true';
+          link.href = updatedUrl;
+        });
+      } else {
+        const liveScript = document.createElement('script');
+        liveScript.setAttribute('async', '');
+        liveScript.setAttribute('src', LIVE_SCRIPT);
+        document.body.append(liveScript);
+      }
+    });
+  }
+  controlScripts(true);
+</script>

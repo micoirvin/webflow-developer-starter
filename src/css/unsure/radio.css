@@ -1,0 +1,40 @@
+.form_input.w-radio {
+  position: relative;
+  /* display: inline-block; */
+  padding-left: 24px; /* space for the custom radio */
+  cursor: pointer;
+}
+
+/* Hide the native radio input */
+/* .form_input.w-radio input[type="radio"] {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+} */
+
+/* Outlined circle */
+.form_input.w-radio::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 16px;
+  height: 16px;
+  border: 2px solid currentColor;
+  border-radius: 50%;
+  box-sizing: border-box;
+}
+
+/* Solid inner circle when selected */
+.form_input.w-radio input[type='radio']:checked + .w-radio::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 8px;
+  height: 8px;
+  background-color: currentColor;
+  border-radius: 50%;
+}

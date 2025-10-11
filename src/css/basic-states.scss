@@ -1,0 +1,14 @@
+.form_checkbox-icon.w--redirected-checked {
+  background-color: var(--background-color--background-primary);
+  border-color: var(--background-color--background-primary);
+}
+
+.nav_menu-button.w-nav-button.w--open .nav_icon path:nth-child(n) {
+  // transform: rotate(90deg);
+}
+.nav_icon path {
+  // transform-origin: center;
+  // transition:
+  //   transform 0.2s ease-in-out,
+  //   opacity 0.2s ease-in-out;
+}

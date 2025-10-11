@@ -1,0 +1,57 @@
+body {
+  text-wrap: pretty;
+  --_sizes---screen-height: 100vh;
+  --_sizes---screen-height: 100svh;
+}
+
+@media screen and (max-width: 767px) {
+  body {
+    --_sizes---section-sizer: var(--_sizes---screen-height);
+  }
+}
+
+a {
+  font-size: inherit;
+  color: inherit;
+}
+
+.w-nav:before,
+.w-nav:after {
+  display: none;
+}
+
+/* Accessibility */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+  color: #000;
+}
+
+.sr-only:focus {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+  border: solid 1px black;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 999;
+}
+
+.w-embed.svg-wrap svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
