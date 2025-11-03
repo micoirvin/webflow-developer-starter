@@ -1,0 +1,9 @@
+.new-hero_form-modal-inside-overflower {
+  overflow: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE 10+ */
+}
+
+.new-hero_form-modal-inside-overflower::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Edge */
+}

@@ -1,0 +1,9 @@
+.responsive-iframe-wrap {
+  position: relative;
+}
+.responsive-iframe-wrap iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+} /*# sourceMappingURL=responsive-iframe.css.map */

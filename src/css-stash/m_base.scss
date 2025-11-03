@@ -55,3 +55,20 @@ a {
   height: 100%;
   display: block;
 }
+
+.form_input-wrap.is-select {
+  position: relative;
+}
+.form_input-wrap.is-select select {
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  appearance: none;
+}
+.form_input-wrap.is-select::after {
+  content: '\25BC';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%) scaleY(0.5);
+  pointer-events: none;
+}

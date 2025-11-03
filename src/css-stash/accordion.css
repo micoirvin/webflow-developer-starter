@@ -1,0 +1,35 @@
+@media (max-width: 767px) {
+  [accordion-mq=mob-l] [accordion-element=header] {
+    cursor: pointer;
+  }
+  [accordion-mq=mob-l] [accordion-element=content-wrap] {
+    max-height: 0;
+    transition: max-height 0.3s ease-in-out;
+    overflow: clip;
+  }
+  [accordion-mq=mob-l] [accordion-element=icon] {
+    transform: rotate(0deg);
+    transition: transform 0.3s ease-in-out;
+  }
+  [accordion-mq=mob-l] [accordion-element=box][accordion-state=expanded] [accordion-element=icon] {
+    transform: rotate(180deg);
+  }
+}
+[accordion-element=root]:not([accordion-mq]) [accordion-element=header] {
+  cursor: pointer;
+}
+
+[accordion-element=root]:not([accordion-mq]) [accordion-element=content-wrap] {
+  max-height: 0;
+  transition: max-height 0.3s ease-in-out;
+  overflow: clip;
+}
+
+[accordion-element=root]:not([accordion-mq]) [accordion-element=icon] {
+  transform: rotate(0deg);
+  transition: transform 0.3s ease-in-out;
+}
+
+[accordion-element=root]:not([accordion-mq]) [accordion-element=box][accordion-state=expanded] [accordion-element=icon] {
+  transform: rotate(180deg);
+}/*# sourceMappingURL=accordion.css.map */
